@@ -267,6 +267,8 @@ NSString *const kGPUImageColorSwizzlingFragmentShaderString = SHADER_STRING
     }
 }
 
+static BOOL allowWriteAudio = NO;
+
 - (void)startRecording;
 {
     alreadyFinishedRecording = NO;
@@ -278,6 +280,7 @@ NSString *const kGPUImageColorSwizzlingFragmentShaderString = SHADER_STRING
         }
     });
     isRecording = YES;
+    allowWriteAudio = NO;
 	//    [assetWriter startSessionAtSourceTime:kCMTimeZero];
 }
 
@@ -365,7 +368,7 @@ NSString *const kGPUImageColorSwizzlingFragmentShaderString = SHADER_STRING
 
 - (void)processAudioBuffer:(CMSampleBufferRef)audioBuffer;
 {
-    if (!isRecording || _paused)
+    if (!isRecording || _paused || !allowWriteAudio)
     {
         return;
     }
@@ -800,6 +803,7 @@ NSString *const kGPUImageColorSwizzlingFragmentShaderString = SHADER_STRING
             {
                 if (![assetWriterPixelBufferInput appendPixelBuffer:pixel_buffer withPresentationTime:frameTime])
                     NSLog(@"Problem appending pixel buffer at time: %@", CFBridgingRelease(CMTimeCopyDescription(kCFAllocatorDefault, frameTime)));
+                allowWriteAudio = YES;
             }
             else
             {
